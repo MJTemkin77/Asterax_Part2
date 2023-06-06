@@ -1,7 +1,4 @@
 #define DEBUG_Spawner
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -31,15 +28,33 @@ public class AsteroidSpawner : MonoBehaviour
         SpawnAsteroidSystem(null, 0, 2);
     }
 
+    /// <summary>
+    /// Recursive generation of an Asteroid cluster.
+    /// Need to work on making them adjacent and scaling their size by each generation.
+    /// </summary>
+    /// <param name="currentLevelAsteroid"></param>
+    /// <param name="level"></param>
+    /// <param name="maxLevel"></param>
     private void SpawnAsteroidSystem(GameObject currentLevelAsteroid = null, int level = 0, int maxLevel = 2)
     {
         if (currentLevelAsteroid == null)
         {
-            currentLevelAsteroid = Instantiate(Asteroids[level], Vector3.zero, Asteroids[level].transform.rotation);
+            currentLevelAsteroid = Instantiate(Asteroids[level], Vector3.one*2f, Asteroids[level].transform.rotation);
         }
 
-        GameObject childA = Instantiate(Asteroids[level + 1]);
-        GameObject childB = Instantiate(Asteroids[level + 1]);
+        Mesh mesh = currentLevelAsteroid.GetComponent<MeshFilter>().mesh;
+        Vector2[] vertices = mesh.uv;
+                
+        int v0 = Random.Range(0, vertices.Length);
+        int v1 = Random.Range(0, vertices.Length);
+
+        GameObject childA = Instantiate(Asteroids[level + 1], vertices[v0], Asteroids[level + 1].transform.rotation);
+        GameObject childB = Instantiate(Asteroids[level + 1], vertices[v1], Asteroids[level + 1].transform.rotation);
+        // Need to position adjacent to parent
+        childA.transform.localScale /= level + 2;
+        childB.transform.localScale /= level + 2;
+
+
         childA.transform.SetParent(currentLevelAsteroid.transform, false);
         childB.transform.SetParent(currentLevelAsteroid.transform, false);
         
