@@ -35,5 +35,34 @@ public class Bullet : MonoBehaviour
     {
         Destroy(gameObject);
     }
-    
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.CompareTag("Asteroid"))
+        {
+            // Find Parent
+            GameObject currentAsteroid = collision.collider.gameObject;
+            while (currentAsteroid.transform.parent != null)
+            {
+                currentAsteroid = currentAsteroid.transform.parent.gameObject;
+            }
+            DestroyMe();
+            GameObject[] nextTopLevels = new GameObject[2];
+
+            for (int i = 0; i < currentAsteroid.transform.childCount; i++)
+            {
+                nextTopLevels[i] = currentAsteroid.transform.GetChild(i).gameObject;
+                nextTopLevels[i].transform.parent = null;
+            }
+            Destroy(currentAsteroid);
+            foreach (var go in nextTopLevels)
+            {
+                go.GetComponent<MeshCollider>().enabled = true;
+            }
+
+            
+
+        }
+    }
+
 }

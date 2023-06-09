@@ -8,7 +8,19 @@ public class AsteroidSpawner : MonoBehaviour
     [SerializeField]
     private AsteroidsSO AsteroidsSO_Instance;
 
+    [SerializeField]
+    private float BaseSpeed;
+
+    [SerializeField]
+    private float rotationSpeed;
+
     private GameObject[] Asteroids;
+
+    private int currentSize = 0;
+    private float currentRotationSpeed = 0;
+    private float currentSpeed;
+
+    private GameObject currentAsteroid;
 
     // Start is called before the first frame update
     void Start()
@@ -37,10 +49,19 @@ public class AsteroidSpawner : MonoBehaviour
     /// <param name="maxLevel"></param>
     private void SpawnAsteroidSystem(GameObject currentLevelAsteroid = null, int level = 0, int maxLevel = 2)
     {
+        int numScale = maxLevel + 1 - level;
         if (currentLevelAsteroid == null)
         {
-            currentLevelAsteroid = Instantiate(Asteroids[level], Vector3.one*2f, Asteroids[level].transform.rotation);
+            Debug.LogFormat("numScale = {0}", numScale);
+            currentLevelAsteroid = Instantiate(Asteroids[level], this.transform.position, Asteroids[level].transform.rotation);
+            currentLevelAsteroid.transform.localScale *= numScale;
+            currentLevelAsteroid.GetComponent<MeshCollider>().enabled = true;
+            currentSize = numScale;
+            currentRotationSpeed = rotationSpeed / currentSize;
+            currentSpeed = BaseSpeed / currentSize;
+            currentAsteroid = currentLevelAsteroid;
         }
+
 
         Mesh mesh = currentLevelAsteroid.GetComponent<MeshFilter>().mesh;
         Vector2[] vertices = mesh.uv;
@@ -50,9 +71,14 @@ public class AsteroidSpawner : MonoBehaviour
 
         GameObject childA = Instantiate(Asteroids[level + 1], vertices[v0], Asteroids[level + 1].transform.rotation);
         GameObject childB = Instantiate(Asteroids[level + 1], vertices[v1], Asteroids[level + 1].transform.rotation);
+        childA.GetComponent<MeshCollider>().enabled = false;
+        childB.GetComponent<MeshCollider>().enabled = false;
         // Need to position adjacent to parent
-        childA.transform.localScale /= level + 2;
-        childB.transform.localScale /= level + 2;
+
+        numScale--;
+        Debug.LogFormat("numScale = {0}", numScale);
+        childA.transform.localScale *= numScale;
+        childB.transform.localScale *= numScale;
 
 
         childA.transform.SetParent(currentLevelAsteroid.transform, false);
@@ -69,6 +95,10 @@ public class AsteroidSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (currentAsteroid != null)
+        {
+            currentAsteroid.transform.Translate(currentAsteroid.transform.right * currentSpeed * Time.deltaTime);
+            currentAsteroid.transform.Rotate(Vector3.up, currentRotationSpeed * Time.deltaTime);
+        }
     }
 }
