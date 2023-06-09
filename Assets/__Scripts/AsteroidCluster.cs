@@ -5,13 +5,15 @@ using UnityEngine;
 public class AsteroidCluster : MonoBehaviour
 {
 
-    public void SetSpeedAndRotation(float speed, float rotation, int numScale)
+    private Bounds screenBounds;
+    public void SetSpeedAndRotation(float speed, float rotation, int numScale, Transform parent)
     {
         BaseSpeed = speed;
         rotationSpeed = rotation;
         currentSize = numScale;
         currentRotationSpeed = rotationSpeed / currentSize;
         currentSpeed = BaseSpeed / currentSize;
+        this.transform.SetParent(parent);
     }
     private float BaseSpeed;
     private float rotationSpeed;
@@ -23,7 +25,12 @@ public class AsteroidCluster : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        GameObject sboundsObj =
+        Camera.main.transform.Find("ScreenBounds").gameObject;
+
+        if (sboundsObj != null) { 
+            screenBounds = sboundsObj.GetComponent<BoxCollider>().bounds;
+        }
     }
 
     // Update is called once per frame
@@ -45,16 +52,28 @@ public class AsteroidCluster : MonoBehaviour
             {
                 nextTopLevels.Add(childAsteroidTrans.gameObject);
             }
+            
+            
+
             foreach (GameObject nextTopLevel in nextTopLevels)
             {
                 nextTopLevel.transform.SetParent(null, false);
-                nextTopLevel.AddComponent<AsteroidCluster>();
+                var comp = nextTopLevel.AddComponent<AsteroidCluster>();
+                comp.SetSpeedAndRotation(BaseSpeed, rotationSpeed, currentSize--, currentAsteroid.transform.parent);
             }
             
             Destroy(currentAsteroid);
+
+            
             foreach (var go in nextTopLevels)
             {
                 go.GetComponent<MeshCollider>().enabled = true;
+                if (!screenBounds.Contains(go.transform.position))
+                {
+                    Vector3 newPosition = screenBounds.ClosestPoint(go.transform.position);
+                    go.transform.position = newPosition;
+                }
+                
             }
 
 

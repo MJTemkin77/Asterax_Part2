@@ -52,8 +52,7 @@ public class AsteroidSpawner : MonoBehaviour
     {
         GameObject topLevel = SpawnAsteroidSystem(position, null, 0, 2);
         AsteroidCluster cluster =topLevel.AddComponent<AsteroidCluster>();
-        cluster.SetSpeedAndRotation(BaseSpeed, rotationSpeed, 3);
-        topLevel.transform.SetParent(AsteroidHierarchyRoot);
+        cluster.SetSpeedAndRotation(BaseSpeed, rotationSpeed, 3, AsteroidHierarchyRoot.transform);
         Debug.Log(topLevel.name);
     }
 
