@@ -1,4 +1,5 @@
 #define DEBUG_Spawner
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -21,6 +22,7 @@ public class AsteroidSpawner : MonoBehaviour
     private float currentSpeed;
 
     private GameObject currentAsteroid;
+    private Transform AsteroidHierarchyRoot;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +39,22 @@ public class AsteroidSpawner : MonoBehaviour
             Debug.Log(obj.name);
         }
 #endif
-        SpawnAsteroidSystem(null, 0, 2);
+        if (GameObject.Find("Asteroids") == null)
+        {
+            AsteroidHierarchyRoot = new GameObject("Asteroids").transform;
+
+        }
+        foreach (Transform child in transform)
+            CreateAsteroidCluster(child.position);
+    }
+
+    void CreateAsteroidCluster(Vector3 position)
+    {
+        GameObject topLevel = SpawnAsteroidSystem(position, null, 0, 2);
+        AsteroidCluster cluster =topLevel.AddComponent<AsteroidCluster>();
+        cluster.SetSpeedAndRotation(BaseSpeed, rotationSpeed, 3);
+        topLevel.transform.SetParent(AsteroidHierarchyRoot);
+        Debug.Log(topLevel.name);
     }
 
     /// <summary>
@@ -47,13 +64,14 @@ public class AsteroidSpawner : MonoBehaviour
     /// <param name="currentLevelAsteroid"></param>
     /// <param name="level"></param>
     /// <param name="maxLevel"></param>
-    private void SpawnAsteroidSystem(GameObject currentLevelAsteroid = null, int level = 0, int maxLevel = 2)
+    private GameObject SpawnAsteroidSystem(Vector3 initialPosition, GameObject currentLevelAsteroid = null, 
+        int level = 0, int maxLevel = 2)
     {
         int numScale = maxLevel + 1 - level;
         if (currentLevelAsteroid == null)
         {
             Debug.LogFormat("numScale = {0}", numScale);
-            currentLevelAsteroid = Instantiate(Asteroids[level], this.transform.position, Asteroids[level].transform.rotation);
+            currentLevelAsteroid = Instantiate(Asteroids[level], initialPosition, Asteroids[level].transform.rotation);
             currentLevelAsteroid.transform.localScale *= numScale;
             currentLevelAsteroid.GetComponent<MeshCollider>().enabled = true;
             currentSize = numScale;
@@ -86,19 +104,17 @@ public class AsteroidSpawner : MonoBehaviour
         
         if (level + 1< maxLevel)
         {
-            SpawnAsteroidSystem(childA, level + 1, maxLevel);
-            SpawnAsteroidSystem(childB, level + 1, maxLevel);
+            SpawnAsteroidSystem(initialPosition, childA, level + 1, maxLevel);
+            SpawnAsteroidSystem(initialPosition, childB, level + 1, maxLevel);
         }
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (currentAsteroid != null)
+        
+        if (level == 0)
         {
-            currentAsteroid.transform.Translate(currentAsteroid.transform.right * currentSpeed * Time.deltaTime);
-            currentAsteroid.transform.Rotate(Vector3.up, currentRotationSpeed * Time.deltaTime);
+            return currentLevelAsteroid;
         }
+        return null;
+
     }
+
+   
 }

@@ -39,6 +39,10 @@ public class Bullet : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.CompareTag("Asteroid"))
+            DestroyMe();
+
+        /*
+        if (collision.collider.CompareTag("Asteroid"))
         {
             // Find Parent
             GameObject currentAsteroid = collision.collider.gameObject;
@@ -60,9 +64,10 @@ public class Bullet : MonoBehaviour
                 go.GetComponent<MeshCollider>().enabled = true;
             }
 
-            
+       
 
         }
+        */
     }
 
 }
